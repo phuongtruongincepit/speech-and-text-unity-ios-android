@@ -38,12 +38,6 @@ public class SpeechButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
     public void OnPointerDown(PointerEventData eventData)
     {
         bool needEffect = true;
-#if UNITY_ANDROID
-        if (sample.isShowPopupAndroid)
-        {
-            needEffect = false;
-        }
-#endif
         if (needEffect)
         {
             effect.SetActive(true);

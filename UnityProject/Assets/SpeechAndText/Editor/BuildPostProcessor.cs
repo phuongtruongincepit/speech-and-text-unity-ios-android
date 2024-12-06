@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
+#if UNITY_IOS && UNITY_EDITOR
 using UnityEditor.iOS.Xcode;
 
 public class BuildPostProcessor
@@ -43,3 +44,4 @@ public class BuildPostProcessor
         project.AddBuildProperty(targetGUID, "OTHER_LDFLAGS", "-ObjC");
     }
 }
+#endif

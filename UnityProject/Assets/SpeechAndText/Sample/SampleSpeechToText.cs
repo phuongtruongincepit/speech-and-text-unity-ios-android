@@ -5,27 +5,18 @@ using UnityEngine.Android;
 
 public class SampleSpeechToText : MonoBehaviour
 {
-    public bool isShowPopupAndroid = true;
     public GameObject loading;
-    public Toggle toggleShowPopupAndroid;
-    public InputField inputLocale;
-    public InputField inputText;
-    public float pitch;
-    public float rate;
+    public InputField inputSilenceLength;
+    public InputField resultText;
 
     public Text txtLocale;
-    public Text txtPitch;
-    public Text txtRate;
 
     void Start()
     {
-        Setting("en-US");
+        Setting("en-US", 0);
         loading.SetActive(false);
-        SpeechToText.Instance.onResultCallback = OnResultSpeech;
+        SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
 #if UNITY_ANDROID
-        SpeechToText.Instance.isShowPopupAndroid = isShowPopupAndroid;
-        toggleShowPopupAndroid.isOn = isShowPopupAndroid;
-        toggleShowPopupAndroid.gameObject.SetActive(true);
         Permission.RequestUserPermission(Permission.Microphone);
 #else
         toggleShowPopupAndroid.gameObject.SetActive(false);
@@ -45,7 +36,7 @@ public class SampleSpeechToText : MonoBehaviour
     public void StopRecording()
     {
 #if UNITY_EDITOR
-        OnResultSpeech("Not support in editor.");
+        OnResultsSpeech("Not support in editor.");
 #else
         SpeechToText.Instance.StopRecording();
 #endif
@@ -53,16 +44,16 @@ public class SampleSpeechToText : MonoBehaviour
         loading.SetActive(true);
 #endif
     }
-    void OnResultSpeech(string _data)
+    void OnResultsSpeech(string _data)
     {
-        inputText.text = _data;
+        resultText.text = _data;
 #if UNITY_IOS
         loading.SetActive(false);
 #endif
     }
     public void OnClickSpeak()
     {
-        TextToSpeech.Instance.StartSpeak(inputText.text);
+        TextToSpeech.Instance.StartSpeak(resultText.text);
     }
 
     /// <summary>
@@ -75,13 +66,10 @@ public class SampleSpeechToText : MonoBehaviour
     /// <summary>
     /// </summary>
     /// <param name="code"></param>
-    public void Setting(string code)
+    public void Setting(string code, int silence)
     {
-        txtLocale.text = "Locale: " + code;
-        txtPitch.text = "Pitch: " + pitch;
-        txtRate.text = "Rate: " + rate;
-        SpeechToText.Instance.Setting(code);
-        TextToSpeech.Instance.Setting(code, pitch, rate);
+        txtLocale.text = "Locale: " + code + "\nSilence length: " + silence;
+        SpeechToText.Instance.Setting(code, silence);
     }
 
     /// <summary>
@@ -89,15 +77,10 @@ public class SampleSpeechToText : MonoBehaviour
     /// </summary>
     public void OnClickApply()
     {
-        Setting(inputLocale.text);
+        Setting("en-US", int.Parse(inputSilenceLength.text));
     }
 
     /// <summary>
     /// </summary>
     /// <param name="value"></param>
-    public void OnToggleShowAndroidPopupChanged(bool value)
-    {
-        isShowPopupAndroid = value;
-        SpeechToText.Instance.isShowPopupAndroid = isShowPopupAndroid;
-    }
 }

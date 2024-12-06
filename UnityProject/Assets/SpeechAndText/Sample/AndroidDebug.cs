@@ -9,7 +9,6 @@ public class AndroidDebug : MonoBehaviour
     public RectTransform RmsBar;
     void Start()
     {
-        SpeechToText.Instance.onResultCallback = onResultCallback;
 #if UNITY_ANDROID
         SpeechToText.Instance.onReadyForSpeechCallback = onReadyForSpeechCallback;
         SpeechToText.Instance.onEndOfSpeechCallback = onEndOfSpeechCallback;
@@ -17,6 +16,8 @@ public class AndroidDebug : MonoBehaviour
         SpeechToText.Instance.onBeginningOfSpeechCallback = onBeginningOfSpeechCallback;
         SpeechToText.Instance.onErrorCallback = onErrorCallback;
         SpeechToText.Instance.onPartialResultsCallback = onPartialResultsCallback;
+        SpeechToText.Instance.onShowVersionCallback = onShowVersionCallback;
+
 #else
         gameObject.SetActive(false);
 #endif
@@ -28,9 +29,10 @@ public class AndroidDebug : MonoBehaviour
         txtNewLog.text = log;
         Debug.Log(log);
     }
-    void onResultCallback(string _data)
+
+    void onShowVersionCallback(string _data)
     {
-        AddLog("Result: " + _data);
+        AddLog("Version: " + _data);
     }
 
     void onReadyForSpeechCallback(string _params)
