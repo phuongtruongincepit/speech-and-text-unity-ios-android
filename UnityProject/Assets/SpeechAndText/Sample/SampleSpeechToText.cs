@@ -7,13 +7,14 @@ public class SampleSpeechToText : MonoBehaviour
 {
     public GameObject loading;
     public InputField inputSilenceLength;
+    public InputField inputMinimumLength;
     public InputField resultText;
 
     public Text txtLocale;
 
     void Start()
     {
-        Setting("en-US", 0);
+        Setting("en-US", 0, 0);
         loading.SetActive(false);
         SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
 #if UNITY_ANDROID
@@ -27,6 +28,7 @@ public class SampleSpeechToText : MonoBehaviour
 
     public void StartRecording()
     {
+        resultText.text = "";
 #if UNITY_EDITOR
 #else
         SpeechToText.Instance.StartRecording("Speak any");
@@ -66,10 +68,10 @@ public class SampleSpeechToText : MonoBehaviour
     /// <summary>
     /// </summary>
     /// <param name="code"></param>
-    public void Setting(string code, int silence)
+    public void Setting(string code, int silence, int minimum)
     {
-        txtLocale.text = "Locale: " + code + "\nSilence length: " + silence;
-        SpeechToText.Instance.Setting(code, silence);
+        txtLocale.text = "Silence length: " + silence + "\nMinimum length: " + minimum;
+        SpeechToText.Instance.Setting(code, silence, minimum);
     }
 
     /// <summary>
@@ -77,7 +79,7 @@ public class SampleSpeechToText : MonoBehaviour
     /// </summary>
     public void OnClickApply()
     {
-        Setting("en-US", int.Parse(inputSilenceLength.text));
+        Setting("en-US", int.Parse(inputSilenceLength.text), int.Parse(inputMinimumLength.text));
     }
 
     /// <summary>

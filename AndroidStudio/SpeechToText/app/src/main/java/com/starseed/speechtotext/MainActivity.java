@@ -1,10 +1,14 @@
 package com.starseed.speechtotext;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.text.TextUtils;
+
+import androidx.annotation.RequiresApi;
 
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
@@ -49,10 +53,17 @@ public class MainActivity extends UnityPlayerActivity
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Bridge.language);
         if (Bridge.completeSilenceLengthMs > 0) {
-            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, Bridge.completeSilenceLengthMs);
+/*            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION, true);
+            }*/
+            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, new Long(Bridge.completeSilenceLengthMs));
         }
-
-        //intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, Bridge.minimumLengthMs);
+        if (Bridge.minimumLengthMs > 0) {
+/*            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION, true);
+            }*/
+            intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, new Long(Bridge.minimumLengthMs));
+        }
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
         this.runOnUiThread(new Runnable() {
@@ -62,7 +73,7 @@ public class MainActivity extends UnityPlayerActivity
                 speech.startListening(intent);
             }
         });
-        UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "CallStart, Language: " + Bridge.language);
+        UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "CallStart, Language: " + Bridge.language + ", Silence length (ms): " + Bridge.completeSilenceLengthMs + ", Minimum length (ms): " + Bridge.minimumLengthMs);
     }
     public void OnStopRecording() {
         this.runOnUiThread(new Runnable() {
@@ -112,7 +123,7 @@ public class MainActivity extends UnityPlayerActivity
             {
                 ArrayList<String> text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (text != null && !text.isEmpty()) {
-                    UnityPlayer.UnitySendMessage("SpeechToText", "onResults", text.get(0));
+                    UnityPlayer.UnitySendMessage("SpeechToText", "onResults", TextUtils.join(" ", text));
                 }
             }
         }
@@ -122,7 +133,7 @@ public class MainActivity extends UnityPlayerActivity
             {
                 ArrayList<String> text = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (text != null && !text.isEmpty()) {
-                    UnityPlayer.UnitySendMessage("SpeechToText", "onPartialResults", text.get(0));
+                    UnityPlayer.UnitySendMessage("SpeechToText", "onPartialResults", TextUtils.join(" ", text));
                 }
             }
         }
@@ -130,6 +141,7 @@ public class MainActivity extends UnityPlayerActivity
         public void onEvent(int eventType, Bundle params) {
             UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "onEvent");
         }
+
     };
 
 

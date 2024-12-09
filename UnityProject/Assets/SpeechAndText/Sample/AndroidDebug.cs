@@ -6,18 +6,16 @@ public class AndroidDebug : MonoBehaviour
 {
     public Text txtLog;
     public Text txtNewLog;
-    public RectTransform RmsBar;
     void Start()
     {
 #if UNITY_ANDROID
         SpeechToText.Instance.onReadyForSpeechCallback = onReadyForSpeechCallback;
         SpeechToText.Instance.onEndOfSpeechCallback = onEndOfSpeechCallback;
-        SpeechToText.Instance.onRmsChangedCallback = onRmsChangedCallback;
         SpeechToText.Instance.onBeginningOfSpeechCallback = onBeginningOfSpeechCallback;
         SpeechToText.Instance.onErrorCallback = onErrorCallback;
         SpeechToText.Instance.onPartialResultsCallback = onPartialResultsCallback;
         SpeechToText.Instance.onShowVersionCallback = onShowVersionCallback;
-
+        SpeechToText.Instance.onMessageCallback = onMessageCallback;
 #else
         gameObject.SetActive(false);
 #endif
@@ -34,6 +32,10 @@ public class AndroidDebug : MonoBehaviour
     {
         AddLog("Version: " + _data);
     }
+    void onMessageCallback(string _data)
+    {
+        AddLog("Message: " + _data);
+    }
 
     void onReadyForSpeechCallback(string _params)
     {
@@ -42,11 +44,6 @@ public class AndroidDebug : MonoBehaviour
     void onEndOfSpeechCallback()
     {
         AddLog("User stops speaking");
-    }
-    void onRmsChangedCallback(float _value)
-    {
-        float _size = _value * 10;
-        RmsBar.sizeDelta = new Vector2(_size, 5);
     }
     void onBeginningOfSpeechCallback()
     {

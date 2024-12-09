@@ -34,7 +34,7 @@ namespace TextSpeech
 
         public Action<string> onResultsCallback;
 
-        public void Setting(string _language, int _silenceLength)
+        public void Setting(string _language, int _silenceLength, int _minimumLength)
         {
 #if UNITY_EDITOR
 #elif UNITY_IPHONE
@@ -43,6 +43,7 @@ namespace TextSpeech
         AndroidJavaClass javaUnityClass = new AndroidJavaClass("com.starseed.speechtotext.Bridge");
         javaUnityClass.CallStatic("SettingSpeechToTextLanguage", _language);
         javaUnityClass.CallStatic("SettingSpeechToTextCompleteSilenceLengthMs", _silenceLength);
+        javaUnityClass.CallStatic("SettingSpeechToTextMinimumLengthMs", _minimumLength);
 #endif
         }
         public void StartRecording(string _message = "")
@@ -79,6 +80,7 @@ namespace TextSpeech
 
         public void onMessage(string _message)
         {
+            onMessageCallback?.Invoke(_message);
         }
         public void onErrorMessage(string _message)
         {
@@ -157,6 +159,7 @@ namespace TextSpeech
         public Action<float> onRmsChangedCallback;
         public Action onBeginningOfSpeechCallback;
         public Action<string> onErrorCallback;
+        public Action<string> onMessageCallback;
         public Action<string> onPartialResultsCallback;
         public Action<string> onShowVersionCallback;
         public void onShowVersion(string _params)

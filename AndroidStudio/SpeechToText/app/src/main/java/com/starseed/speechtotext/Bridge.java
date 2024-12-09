@@ -9,8 +9,8 @@ public class Bridge {
 
     // Speak To Text
     protected static String language = "en-US";
-    protected static int completeSilenceLengthMs = 3000;
-    protected static int minimumLengthMs = 1000;
+    protected static int completeSilenceLengthMs = 0;
+    protected static int minimumLengthMs = 0;
 
     public static void SettingSpeechToTextLanguage(String language){
         Bridge.language = language;
