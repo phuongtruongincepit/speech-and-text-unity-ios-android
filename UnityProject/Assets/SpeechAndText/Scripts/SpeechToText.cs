@@ -78,10 +78,7 @@ namespace TextSpeech
         private static extern void _TAG_SettingSpeech(string _language);
 #endif
 
-        public void onMessage(string _message)
-        {
-            onMessageCallback?.Invoke(_message);
-        }
+
         public void onErrorMessage(string _message)
         {
             Debug.Log(_message);
@@ -203,7 +200,10 @@ namespace TextSpeech
         {
             onPartialResultsCallback?.Invoke(_params);
         }
-
+        public void onMessage(string _message)
+        {
+            onMessageCallback?.Invoke(_message);
+        }
 #endif
         #endregion
     }

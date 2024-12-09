@@ -19,8 +19,6 @@ public class SampleSpeechToText : MonoBehaviour
         SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
 #if UNITY_ANDROID
         Permission.RequestUserPermission(Permission.Microphone);
-#else
-        toggleShowPopupAndroid.gameObject.SetActive(false);
 #endif
 
     }
