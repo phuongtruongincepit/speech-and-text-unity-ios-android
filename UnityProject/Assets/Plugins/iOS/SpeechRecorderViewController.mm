@@ -4,7 +4,7 @@
 //
 #import "SpeechRecorderViewController.h"
 #import <Speech/Speech.h>
-
+#import <mach/mach_time.h>
 @interface SpeechRecorderViewController ()
 {    
     // Speech recognize
@@ -15,11 +15,25 @@
     AVAudioInputNode *inputNode;
     AVAudioEngine *audioEngine;	
 	NSString * LanguageCode;
-    
+    int silenceLengthInMs;
+    int minimumLengthInMs;
+    int maximumLengthInMs;
+    uint64_t lastTimeReturnResult;
 }
 @end
 
 @implementation SpeechRecorderViewController
+- (uint64_t) getCurrentTimeInMilliseconds {
+    uint64_t now = mach_absolute_time();
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    
+    // Convert ticks to nanoseconds, then to milliseconds
+    uint64_t timeInNanoseconds = now * info.numer / info.denom;
+    uint64_t timeInMilliseconds = timeInNanoseconds / 1e6;
+
+    return timeInMilliseconds;
+}
 
 - (id)init
 {
@@ -27,7 +41,9 @@
     LanguageCode = @"ko-KR";
     NSLocale *local =[[NSLocale alloc] initWithLocaleIdentifier:LanguageCode];
     speechRecognizer = [[SFSpeechRecognizer alloc] initWithLocale:local];
-    
+    silenceLengthInMs = 0;
+    minimumLengthInMs = 0;
+    maximumLengthInMs = 0;
     //for (NSLocale *locate in [SFSpeechRecognizer supportedLocales]) {
     //    NSLog(@"%@", [locate localizedStringForCountryCode:locate.countryCode]);
     //}
@@ -59,7 +75,7 @@
         });
         
     }];
-	
+
 	return self;
 }
 
@@ -68,8 +84,25 @@
     LanguageCode = [NSString stringWithUTF8String:_language];
     NSLocale *local =[[NSLocale alloc] initWithLocaleIdentifier:LanguageCode];
     speechRecognizer = [[SFSpeechRecognizer alloc] initWithLocale:local];
+    NSLog(@"Setting language success");
     UnitySendMessage("SpeechToText", "onMessage", "Setting Success");
 }
+- (void)SettingSpeechSilenceLength: (int ) _silenceInMs
+{
+    silenceLengthInMs = _silenceInMs;
+    NSLog(@"silenceLengthInMs: %d", silenceLengthInMs);
+}
+- (void)SettingSpeechMinimumLength: (int ) _minimumInMs
+{
+    minimumLengthInMs = _minimumInMs;
+    NSLog(@"minimumLengthInMs: %d", minimumLengthInMs);
+}
+- (void)SettingSpeechMaximumLength: (int ) _maximumInMs
+{
+    maximumLengthInMs = _maximumInMs;
+    NSLog(@"maximumLengthInMs: %d", maximumLengthInMs);
+}
+
 // recording
 - (void)startRecording {
     if (!audioEngine.isRunning) {
@@ -90,9 +123,11 @@
         recognitionTask =[speechRecognizer recognitionTaskWithRequest:recognitionRequest resultHandler:^(SFSpeechRecognitionResult * _Nullable result, NSError * _Nullable error)
         {
             if (result) {
+                lastTimeReturnResult = [self getCurrentTimeInMilliseconds];
                 NSString *transcriptText = result.bestTranscription.formattedString;
-                NSLog(@"STARTRECORDING RESULT: %@", transcriptText);
+                NSLog(@"STARTRECORDING PARTIAL RESULT: %@", transcriptText);
                 if (result.isFinal) {
+                    NSLog(@"STARTRECORDING FINAL RESULT: %@", transcriptText);
                     UnitySendMessage("SpeechToText", "onResults", [transcriptText UTF8String]);
                 }
             }
@@ -104,11 +139,42 @@
                 NSLog(@"STARTRECORDING RESULT NULL");
             }
         }];
-
+        __block int accumulatedDuration = 0;
+        lastTimeReturnResult = 0;
         AVAudioFormat *format = [inputNode outputFormatForBus:0];
         
         [inputNode installTapOnBus:0 bufferSize:1024 format:format block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
-            [recognitionRequest appendAudioPCMBuffer:buffer];
+            // Calculate buffer duration
+            AVAudioFrameCount frameCount = buffer.frameLength;
+            double sampleRate = format.sampleRate;
+            int bufferDuration = (frameCount / sampleRate) * 1000;
+        
+            // Accumulate duration
+            accumulatedDuration += bufferDuration;
+            NSLog(@"accumulatedDuration: %d", accumulatedDuration);
+            if (maximumLengthInMs > 0)
+            {
+                if (accumulatedDuration <= maximumLengthInMs) {
+                    // Append audio buffer for recognition
+                    NSLog(@"recognitionRequest appendAudioPCMBuffer:buffer");
+                    [recognitionRequest appendAudioPCMBuffer:buffer];
+                } else {
+                    NSLog(@"Maximum length reached, stopRecording");
+                    [self stopRecording];
+                }
+            }
+            else {
+                NSLog(@"recognitionRequest appendAudioPCMBuffer:buffer");
+                [recognitionRequest appendAudioPCMBuffer:buffer];
+            }
+            // Reset timeout timer when audio buffer is received (indicating activity)
+            if (silenceLengthInMs > 0 && lastTimeReturnResult > 0) 
+            {
+                if ([self getCurrentTimeInMilliseconds] - lastTimeReturnResult >= silenceLengthInMs && accumulatedDuration >= minimumLengthInMs) {
+                    NSLog(@"Silence timeout reached, stop recording");
+                    [self stopRecording];
+                }
+            }
         }];
         [audioEngine prepare];
         NSError *error1;
@@ -151,5 +217,17 @@ extern "C"{
     void _TAG_SettingSpeech(const char * _language){
         SpeechRecorderViewController *pVc = getVc();
         [pVc SettingSpeech:_language];
+    }
+    void _TAG_SettingSpeechSilenceLength(int _silenceInMs){
+        SpeechRecorderViewController *pVc = getVc();
+        [pVc SettingSpeechSilenceLength:_silenceInMs];
+    }
+    void _TAG_SettingSpeechMinimumLength(int _minimumInMs){
+        SpeechRecorderViewController *pVc = getVc();
+        [pVc SettingSpeechMinimumLength:_minimumInMs];
+    }
+    void _TAG_SettingSpeechMaximumLength(int _maximumInMs){
+        SpeechRecorderViewController *pVc = getVc();
+        [pVc SettingSpeechMaximumLength:_maximumInMs];
     }
 }

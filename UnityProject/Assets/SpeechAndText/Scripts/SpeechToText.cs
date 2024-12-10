@@ -39,6 +39,8 @@ namespace TextSpeech
 #if UNITY_EDITOR
 #elif UNITY_IPHONE
         _TAG_SettingSpeech(_language);
+        _TAG_SettingSpeechSilenceLength(_silenceLength);  
+        _TAG_SettingSpeechMinimumLength(_minimumLength);
 #elif UNITY_ANDROID
         AndroidJavaClass javaUnityClass = new AndroidJavaClass("com.starseed.speechtotext.Bridge");
         javaUnityClass.CallStatic("SettingSpeechToTextLanguage", _language);
@@ -76,6 +78,17 @@ namespace TextSpeech
 
         [DllImport("__Internal")]
         private static extern void _TAG_SettingSpeech(string _language);
+        
+        [DllImport("__Internal")]
+        private static extern void _TAG_SettingSpeechSilenceLength(int _silenceInMs);
+        
+        [DllImport("__Internal")]
+        private static extern void _TAG_SettingSpeechMinimumLength(int _minimumInMs);
+        
+        [DllImport("__Internal")]
+        private static extern void _TAG_SettingSpeechMaximumLength(int _maximumInMs);
+      
+       
 #endif
 
 
