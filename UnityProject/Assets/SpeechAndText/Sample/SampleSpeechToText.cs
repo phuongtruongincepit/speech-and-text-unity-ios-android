@@ -9,16 +9,22 @@ public class SampleSpeechToText : MonoBehaviour
     public InputField inputSilenceLength;
     public InputField inputMinimumLength;
     public InputField resultText;
-
-    public Text txtLocale;
+    public Button applyButton;
+    public Text txtSettingsInfo;
 
     void Start()
     {
         Setting("en-US", 0, 0);
         loading.SetActive(false);
         SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
+
 #if UNITY_ANDROID
         Permission.RequestUserPermission(Permission.Microphone);
+#else
+        inputSilenceLength.gameObject.SetActive(false);
+        inputMinimumLength.gameObject.SetActive(false);
+        applyButton.gameObject.SetActive(false);
+        txtSettingsInfo.gameObject.SetActive(false);
 #endif
 
     }
@@ -68,7 +74,7 @@ public class SampleSpeechToText : MonoBehaviour
     /// <param name="code"></param>
     public void Setting(string code, int silence, int minimum)
     {
-        txtLocale.text = "Silence length: " + silence + "\nMinimum length: " + minimum;
+        txtSettingsInfo.text = "Silence length: " + silence + "\nMinimum length: " + minimum;
         SpeechToText.Instance.Setting(code, silence, minimum);
     }
 
