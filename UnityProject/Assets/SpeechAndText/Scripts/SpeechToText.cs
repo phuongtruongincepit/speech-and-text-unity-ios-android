@@ -34,13 +34,14 @@ namespace TextSpeech
 
         public Action<string> onResultsCallback;
 
-        public void Setting(string _language, int _silenceLength, int _minimumLength)
+        public void Setting(string _language, int _silenceLength, int _minimumLength, int _maximumLength)
         {
 #if UNITY_EDITOR
 #elif UNITY_IPHONE
         _TAG_SettingSpeech(_language);
         _TAG_SettingSpeechSilenceLength(_silenceLength);  
         _TAG_SettingSpeechMinimumLength(_minimumLength);
+        _TAG_SettingSpeechMaximumLength(_maximumLength);
 #elif UNITY_ANDROID
         AndroidJavaClass javaUnityClass = new AndroidJavaClass("com.starseed.speechtotext.Bridge");
         javaUnityClass.CallStatic("SettingSpeechToTextLanguage", _language);

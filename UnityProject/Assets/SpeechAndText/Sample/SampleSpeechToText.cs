@@ -5,17 +5,16 @@ using UnityEngine.Android;
 
 public class SampleSpeechToText : MonoBehaviour
 {
-    public GameObject loading;
     public InputField inputSilenceLength;
     public InputField inputMinimumLength;
+    public InputField inputMaximumLength;
     public InputField resultText;
 
-    public Text txtLocale;
+    public Text txtSettingsInfo;
 
     void Start()
     {
-        Setting("en-US", 0, 0);
-        loading.SetActive(false);
+        Setting("en-US", 0, 0, 0);
         SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
 #if UNITY_ANDROID
         Permission.RequestUserPermission(Permission.Microphone);
@@ -40,16 +39,10 @@ public class SampleSpeechToText : MonoBehaviour
 #else
         SpeechToText.Instance.StopRecording();
 #endif
-#if UNITY_IOS
-        //loading.SetActive(true);
-#endif
     }
     void OnResultsSpeech(string _data)
     {
         resultText.text = _data;
-#if UNITY_IOS
-        //loading.SetActive(false);
-#endif
     }
     public void OnClickSpeak()
     {
@@ -66,10 +59,10 @@ public class SampleSpeechToText : MonoBehaviour
     /// <summary>
     /// </summary>
     /// <param name="code"></param>
-    public void Setting(string code, int silence, int minimum)
+    public void Setting(string code, int silence, int minimum, int maximum)
     {
-        txtLocale.text = "Silence length: " + silence + "\nMinimum length: " + minimum;
-        SpeechToText.Instance.Setting(code, silence, minimum);
+        txtSettingsInfo.text = "Silence length: " + silence + "\nMinimum length: " + minimum + "\nMaximum length: " + maximum;
+        SpeechToText.Instance.Setting(code, silence, minimum, maximum);
     }
 
     /// <summary>
@@ -77,7 +70,7 @@ public class SampleSpeechToText : MonoBehaviour
     /// </summary>
     public void OnClickApply()
     {
-        Setting("en-US", int.Parse(inputSilenceLength.text), int.Parse(inputMinimumLength.text));
+        Setting("en-US", int.Parse(inputSilenceLength.text), int.Parse(inputMinimumLength.text), int.Parse(inputMaximumLength.text));
     }
 
     /// <summary>
