@@ -11,6 +11,7 @@ public class Bridge {
     protected static String language = "en-US";
     protected static int completeSilenceLengthMs = 0;
     protected static int minimumLengthMs = 0;
+    protected static int maximumLengthMs = 0;
 
     public static void SettingSpeechToTextLanguage(String language){
         Bridge.language = language;
@@ -22,6 +23,9 @@ public class Bridge {
     }
     public static void SettingSpeechToTextMinimumLengthMs(int ms){
         Bridge.minimumLengthMs = ms;
+    }
+    public static void SettingSpeechToTextMaximumLengthMs(int ms){
+        Bridge.maximumLengthMs = ms;
     }
     public static void StartRecording() {
         MainActivity activity = (MainActivity)UnityPlayer.currentActivity;

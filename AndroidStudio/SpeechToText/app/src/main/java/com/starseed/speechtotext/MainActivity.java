@@ -3,6 +3,7 @@ package com.starseed.speechtotext;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -19,11 +20,12 @@ public class MainActivity extends UnityPlayerActivity
 {
     private SpeechRecognizer speech;
     private Intent intent;
+    private Handler handler;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
+        handler = new Handler();
         speech = SpeechRecognizer.createSpeechRecognizer(this);
         speech.setRecognitionListener(recognitionListener);
     }
@@ -71,9 +73,12 @@ public class MainActivity extends UnityPlayerActivity
             @Override
             public void run() {
                 speech.startListening(intent);
+                if (Bridge.maximumLengthMs > 0) {
+                    handler.postDelayed(() -> OnStopRecording(), Bridge.maximumLengthMs);
+                }
             }
         });
-        UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "CallStart, Language: " + Bridge.language + ", Silence length (ms): " + Bridge.completeSilenceLengthMs + ", Minimum length (ms): " + Bridge.minimumLengthMs);
+        UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "CallStart, Language: " + Bridge.language + ", Silence length (ms): " + Bridge.completeSilenceLengthMs + ", Minimum length (ms): " + Bridge.minimumLengthMs + ", Maximum length (ms): " + Bridge.maximumLengthMs);
     }
     public void OnStopRecording() {
         this.runOnUiThread(new Runnable() {
@@ -86,10 +91,6 @@ public class MainActivity extends UnityPlayerActivity
         UnityPlayer.UnitySendMessage("SpeechToText", "onMessage", "CallStop");
     }
 
-    public void onLog(String m)
-    {
-        UnityPlayer.UnitySendMessage("SpeechToText", "onLog", m.toString());
-    }
 
     RecognitionListener recognitionListener = new RecognitionListener() {
 
@@ -196,3 +197,9 @@ public class MainActivity extends UnityPlayerActivity
         }
     }
 }
+
+/*
+to build: Build\Rebuild Project
+then file classes.jar will appear in AndroidStudio\SpeechToText\app\build\intermediates\aar_main_jar\release
+Rename to SpeechToTextPlugin.jar, then copy this file and paste to Plugin folder in Unity
+* */

@@ -47,6 +47,7 @@ namespace TextSpeech
         javaUnityClass.CallStatic("SettingSpeechToTextLanguage", _language);
         javaUnityClass.CallStatic("SettingSpeechToTextCompleteSilenceLengthMs", _silenceLength);
         javaUnityClass.CallStatic("SettingSpeechToTextMinimumLengthMs", _minimumLength);
+        javaUnityClass.CallStatic("SettingSpeechToTextMaximumLengthMs", _maximumLength);
 #endif
         }
         public void StartRecording(string _message = "")
