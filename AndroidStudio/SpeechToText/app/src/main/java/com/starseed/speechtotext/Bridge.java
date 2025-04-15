@@ -35,5 +35,20 @@ public class Bridge {
         MainActivity activity = (MainActivity)UnityPlayer.currentActivity;
         activity.OnStopRecording();
     }
-
+    // Text To Speech
+    public static void OpenTextToSpeed(String text) {
+        MainActivity activity = (MainActivity)UnityPlayer.currentActivity;
+        activity.OnStartSpeak(text);
+    }
+    public static void SettingTextToSpeed(String language, float pitch, float rate) {
+        MainActivity activity = (MainActivity)UnityPlayer.currentActivity;
+        activity.OnSettingSpeak(language, pitch, rate);
+    }
+    public static void StopTextToSpeed(){
+        MainActivity activity = (MainActivity)UnityPlayer.currentActivity;
+        activity.OnStopSpeak();
+    }
+    public static int getMessage() {
+        return 100;
+    }
 }

@@ -6,7 +6,7 @@ using System;
 
 namespace TextSpeech
 {
-    public class TextToSpeech : MonoBehaviour
+    public class TextToSpeech/* : MonoBehaviour*/
     {
         #region Init
         private static TextToSpeech _instance;
@@ -16,18 +16,19 @@ namespace TextSpeech
             {
                 if (_instance == null)
                 {
-                        //Create if it doesn't exist
-                    GameObject go = new GameObject("TextToSpeech");
-                    _instance = go.AddComponent<TextToSpeech>();
+                    //Create if it doesn't exist
+                    //GameObject go = new GameObject("TextToSpeech");
+                    //_instance = go.AddComponent<TextToSpeech>();
+                    _instance = new TextToSpeech();
                 }
                 return _instance;
             }
         }
 
-        void Awake()
+/*        void Awake()
         {
             _instance = this;
-        }
+        }*/
         #endregion
 
         public Action onStartCallBack;
@@ -70,6 +71,11 @@ namespace TextSpeech
         AndroidJavaClass javaUnityClass = new AndroidJavaClass("com.starseed.speechtotext.Bridge");
         javaUnityClass.CallStatic("StopTextToSpeed");
 #endif
+        }
+        public int GetMessageFromJava()
+        {
+            AndroidJavaClass javaUnityClass = new AndroidJavaClass("com.starseed.speechtotext.Bridge");
+            return javaUnityClass.CallStatic<int>("getMessage");
         }
 
         public void onSpeechRange(string _message)

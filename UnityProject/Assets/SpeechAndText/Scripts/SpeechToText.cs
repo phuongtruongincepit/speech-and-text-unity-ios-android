@@ -20,6 +20,7 @@ namespace TextSpeech
                     //Create if it doesn't exist
                     GameObject go = new GameObject("SpeechToText");
                     _instance = go.AddComponent<SpeechToText>();
+                    
                 }
                 return _instance;
             }
@@ -36,7 +37,15 @@ namespace TextSpeech
 
         public void Setting(string _language, int _silenceLength, int _minimumLength, int _maximumLength)
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+            SpeechToTextWindows.Instance.SettingSpeechSilenceLength(_silenceLength);
+            SpeechToTextWindows.Instance.SettingSpeechMinimumLength(_minimumLength);
+            SpeechToTextWindows.Instance.SettingSpeechMaximumLength(_maximumLength);
+            if (SpeechToTextWindows.Instance.onRecognized == null)
+            {
+                SpeechToTextWindows.Instance.onRecognized = onResults;
+            }
+            
 #elif UNITY_IPHONE
         _TAG_SettingSpeech(_language);
         _TAG_SettingSpeechSilenceLength(_silenceLength);  
@@ -52,7 +61,8 @@ namespace TextSpeech
         }
         public void StartRecording(string _message = "")
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+            SpeechToTextWindows.Instance.StartRecognition();
 #elif UNITY_IPHONE
         _TAG_startRecording();
 #elif UNITY_ANDROID
@@ -62,7 +72,8 @@ namespace TextSpeech
         }
         public void StopRecording()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+            SpeechToTextWindows.Instance.StopRecognition();
 #elif UNITY_IPHONE
         _TAG_stopRecording();
 #elif UNITY_ANDROID
@@ -101,6 +112,7 @@ namespace TextSpeech
         /** Called when recognition results are ready. */
         public void onResults(string _results)
         {
+            Debug.Log("onResults: " + _results);
             onResultsCallback?.Invoke(_results);
         }
 

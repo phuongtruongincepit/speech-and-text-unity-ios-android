@@ -2,7 +2,9 @@
 using UnityEngine.UI;
 using TextSpeech;
 using UnityEngine.Android;
-
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+using UnityEngine.Windows.Speech;
+#endif
 public class SampleSpeechToText : MonoBehaviour
 {
     public InputField inputSilenceLength;
@@ -11,50 +13,101 @@ public class SampleSpeechToText : MonoBehaviour
     public InputField resultText;
 
     public Text txtSettingsInfo;
+/*#if UNITY_EDITOR || UNITY_STANDALONE_WIN
 
+    private DictationRecognizer dictationRecognizer;
+    private void StartDictation()
+    {
+        if (dictationRecognizer.Status != SpeechSystemStatus.Running)
+        {
+            dictationRecognizer.Start();
+            Debug.Log("DictationRecognizer started.");
+        }
+    }
+
+    private void OnDictationResult(string text, ConfidenceLevel confidence)
+    {
+        Debug.Log($"Recognized text: {text} (Confidence: {confidence})");
+    }
+
+    private void OnDictationHypothesis(string text)
+    {
+        Debug.Log($"Hypothesis: {text}");
+    }
+
+    private void OnDictationComplete(DictationCompletionCause cause)
+    {
+        if (cause != DictationCompletionCause.Complete)
+        {
+            Debug.LogError($"Dictation completed unsuccessfully: {cause}");
+        }
+        else
+        {
+            Debug.Log("Dictation completed successfully.");
+        }
+
+        // Restart dictation to listen for new speech
+        StartDictation();
+    }
+
+    private void OnDictationError(string error, int hresult)
+    {
+        Debug.LogError($"Dictation error: {error}; HResult = {hresult}");
+
+        // Restart dictation in case of an error
+        StartDictation();
+    }
+    void OnDestroy()
+    {
+        if (dictationRecognizer != null)
+        {
+            dictationRecognizer.Stop();
+            dictationRecognizer.Dispose();
+            Debug.Log("DictationRecognizer stopped and disposed.");
+        }
+    }
+#endif*/
     void Start()
     {
+/*#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        // Initialize the DictationRecognizer
+        Debug.Log($"Speech recognition supported: {PhraseRecognitionSystem.isSupported}");
+        dictationRecognizer = new DictationRecognizer();
+
+        dictationRecognizer.DictationResult += OnDictationResult;
+        dictationRecognizer.DictationHypothesis += OnDictationHypothesis;
+        dictationRecognizer.DictationComplete += OnDictationComplete;
+        dictationRecognizer.DictationError += OnDictationError;
+
+        StartDictation();
+        Debug.Log("Dictation recognizer started. Start speaking...");
+#else*/
         Setting("en-US", 0, 0, 0);
         SpeechToText.Instance.onResultsCallback = OnResultsSpeech;
 #if UNITY_ANDROID
         Permission.RequestUserPermission(Permission.Microphone);
 #endif
-
+//#endif
     }
 
 
     public void StartRecording()
     {
         resultText.text = "";
-#if UNITY_EDITOR
-#else
         SpeechToText.Instance.StartRecording("Speak any");
-#endif
     }
 
     public void StopRecording()
     {
-#if UNITY_EDITOR
-        OnResultsSpeech("Not support in editor.");
-#else
+
         SpeechToText.Instance.StopRecording();
-#endif
     }
     void OnResultsSpeech(string _data)
     {
+        Debug.Log("OnResultsSpeech: " + _data);
         resultText.text = _data;
     }
-    public void OnClickSpeak()
-    {
-        TextToSpeech.Instance.StartSpeak(resultText.text);
-    }
 
-    /// <summary>
-    /// </summary>
-    public void  OnClickStopSpeak()
-    {
-        TextToSpeech.Instance.StopSpeak();
-    }
 
     /// <summary>
     /// </summary>

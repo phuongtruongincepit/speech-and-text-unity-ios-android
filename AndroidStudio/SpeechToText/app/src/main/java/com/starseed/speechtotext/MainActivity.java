@@ -10,7 +10,8 @@ import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 
 import androidx.annotation.RequiresApi;
-
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.Locale;
 
 public class MainActivity extends UnityPlayerActivity
 {
+    private TextToSpeech tts;
     private SpeechRecognizer speech;
     private Intent intent;
     private Handler handler;
@@ -31,11 +33,16 @@ public class MainActivity extends UnityPlayerActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         handler = new Handler();
+        tts = new TextToSpeech(this, initListener);
         speech = SpeechRecognizer.createSpeechRecognizer(this);
         speech.setRecognitionListener(recognitionListener);
     }
     @Override
     public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
         if (speech != null) {
             speech.destroy();
         }
@@ -45,7 +52,7 @@ public class MainActivity extends UnityPlayerActivity
 
     public void OnShowVersion()
     {
-        UnityPlayer.UnitySendMessage("SpeechToText", "onShowVersion", "1.0.2");
+        UnityPlayer.UnitySendMessage("SpeechToText", "onShowVersion", "1.0.1");
     }
     private void StartTempRecording() {
         intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -204,6 +211,48 @@ public class MainActivity extends UnityPlayerActivity
     };
 
 
+    ////
+    public  void OnStartSpeak(String valueText)
+    {
+        tts.speak(valueText, TextToSpeech.QUEUE_FLUSH, null, valueText);
+    }
+    public void OnSettingSpeak(String language, float pitch, float rate) {
+        tts.setPitch(pitch);
+        tts.setSpeechRate(rate);
+        int result = tts.setLanguage(getLocaleFromString(language));
+        UnityPlayer.UnitySendMessage("TextToSpeech", "onSettingResult", "Pitch " + pitch + ", rate: " + rate + ". Success: " + result);
+    }
+    public void OnStopSpeak()
+    {
+        tts.stop();
+    }
+
+    TextToSpeech.OnInitListener initListener = new TextToSpeech.OnInitListener()
+    {
+        @Override
+        public void onInit(int status) {
+            if (status == TextToSpeech.SUCCESS)
+            {
+                OnSettingSpeak(Locale.US.toString(), 1.0f, 1.0f);
+                tts.setOnUtteranceProgressListener(utteranceProgressListener);
+            }
+        }
+    };
+
+    UtteranceProgressListener utteranceProgressListener=new UtteranceProgressListener() {
+        @Override
+        public void onStart(String utteranceId) {
+            UnityPlayer.UnitySendMessage("TextToSpeech", "onStart", utteranceId);
+        }
+        @Override
+        public void onError(String utteranceId) {
+            UnityPlayer.UnitySendMessage("TextToSpeech", "onError", utteranceId);
+        }
+        @Override
+        public void onDone(String utteranceId) {
+            UnityPlayer.UnitySendMessage("TextToSpeech", "onDone", utteranceId);
+        }
+    };
     /**
      * Convert a string based locale into a Locale Object.
      * Assumes the string has form "{language}_{country}_{variant}".
