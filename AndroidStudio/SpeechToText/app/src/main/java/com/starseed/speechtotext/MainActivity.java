@@ -1,7 +1,7 @@
 package com.starseed.speechtotext;
 
 import android.content.Intent;
-import android.os.Build;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
@@ -9,7 +9,6 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 
-import androidx.annotation.RequiresApi;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import com.unity3d.player.UnityPlayer;
@@ -308,5 +307,5 @@ public class MainActivity extends UnityPlayerActivity
 /*
 to build: Build\Rebuild Project
 then file classes.jar will appear in AndroidStudio\SpeechToText\app\build\intermediates\aar_main_jar\release
-Rename to SpeechToTextPlugin.jar, then copy this file and paste to Plugin folder in Unity
+Copy this file and paste to Plugin folder in Unity, when you update this class.jar in unity, please close unity editor and open again to make this new class.jar be loaded.
 * */
